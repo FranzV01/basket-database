@@ -3,7 +3,10 @@ name: Auto Split HTML/CSS/JS
 on:
   push:
     branches:
-      - main # O il nome del tuo branch principale
+      - main
+
+permissions:
+  contents: write  # <-- Questo consente all'azione di fare il push dei file
 
 jobs:
   split-code:
