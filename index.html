@@ -1,0 +1,1918 @@
+<!DOCTYPE html>
+<html lang="it" class="dark h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BasketPedia - Enciclopedia & Database Intelligente Basket</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff7ed',
+                            100: '#ffedd5',
+                            500: '#f97316',
+                            600: '#ea580c',
+                            700: '#c2410c',
+                            900: '#7c2d12',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #f97316; }
+        ::-webkit-scrollbar-thumb:hover { background: #ea580c; }
+        
+        .wiki-link {
+            color: #f97316;
+            text-decoration: underline;
+            text-decoration-color: rgba(249, 115, 22, 0.4);
+            transition: all 0.2s;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .wiki-link:hover {
+            color: #c2410c;
+            text-decoration-color: #f97316;
+        }
+        .dark .wiki-link:hover {
+            color: #ffedd5;
+            text-decoration-color: #f97316;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans antialiased bg-slate-100 text-slate-800 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40 shadow-sm dark:shadow-slate-950/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 gap-4">
+                
+                <!-- Logo & Brand -->
+                <div class="flex items-center gap-3 cursor-pointer select-none" onclick="navigateTo('home')">
+                    <div class="bg-gradient-to-tr from-brand-600 to-amber-500 p-2.5 rounded-xl shadow-md shadow-brand-500/20 text-white">
+                        <i data-lucide="dribbble" class="w-6 h-6 animate-pulse"></i>
+                    </div>
+                    <div>
+                        <span class="font-bold text-xl tracking-tight text-slate-900 dark:text-white flex items-center gap-1.5">
+                            Basket<span class="text-brand-500">Pedia</span>
+                            <span class="text-[10px] bg-slate-200 dark:bg-slate-800 text-brand-600 dark:text-brand-400 font-bold px-2 py-0.5 rounded-full border border-slate-300 dark:border-slate-700">WIKI DB</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Global Search Bar -->
+                <div class="flex-1 max-w-md relative">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <i data-lucide="search" class="w-4 h-4"></i>
+                        </div>
+                        <input type="text" id="searchInput" oninput="handleGlobalSearch(this.value)" 
+                            placeholder="Cerca per nome, nazione, sponsor o ruolo..." 
+                            class="w-full pl-9 pr-4 py-2 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700/80 rounded-xl text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all">
+                    </div>
+                    <!-- Search Results Dropdown -->
+                    <div id="searchResults" class="hidden absolute left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl max-h-96 overflow-y-auto z-50 divide-y divide-slate-100 dark:divide-slate-800"></div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="hidden md:flex items-center gap-1 text-sm font-medium">
+                    <button onclick="navigateTo('classifiche')" id="nav-classifiche" class="nav-btn px-3 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
+                        <i data-lucide="trophy" class="w-4 h-4 text-amber-500"></i> Rank
+                    </button>
+                    <button onclick="navigateTo('campionati')" id="nav-campionati" class="nav-btn px-3 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
+                        <i data-lucide="award" class="w-4 h-4 text-sky-500"></i> Campionati
+                    </button>
+                    <button onclick="navigateTo('squadre')" id="nav-squadre" class="nav-btn px-3 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
+                        <i data-lucide="shield" class="w-4 h-4 text-emerald-500"></i> Squadre
+                    </button>
+                    <button onclick="navigateTo('giocatori')" id="nav-giocatori" class="nav-btn px-3 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
+                        <i data-lucide="users" class="w-4 h-4 text-purple-500"></i> Giocatori
+                    </button>
+                    <button onclick="navigateTo('compare')" id="nav-compare" class="nav-btn px-3 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
+                        <i data-lucide="git-compare" class="w-4 h-4 text-rose-500"></i> Confronto
+                    </button>
+
+                    <!-- Add Button -->
+                    <button onclick="openAddModal()" class="ml-1 px-3 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold transition flex items-center gap-1.5 shadow-sm">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    </button>
+
+                    <!-- Dark/Light Mode Toggle -->
+                    <button onclick="toggleTheme()" class="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="Cambia Tema">
+                        <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
+                        <i data-lucide="moon" class="w-4 h-4 block dark:hidden"></i>
+                    </button>
+                </nav>
+
+            </div>
+        </div>
+
+        <!-- Mobile Navigation bar -->
+        <div class="md:hidden flex border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 justify-around p-2 text-xs">
+            <button onclick="navigateTo('classifiche')" class="flex flex-col items-center p-1 text-slate-600 dark:text-slate-300">
+                <i data-lucide="trophy" class="w-4 h-4 text-amber-500"></i> Rank
+            </button>
+            <button onclick="navigateTo('campionati')" class="flex flex-col items-center p-1 text-slate-600 dark:text-slate-300">
+                <i data-lucide="award" class="w-4 h-4 text-sky-500"></i> Lega
+            </button>
+            <button onclick="navigateTo('squadre')" class="flex flex-col items-center p-1 text-slate-600 dark:text-slate-300">
+                <i data-lucide="shield" class="w-4 h-4 text-emerald-500"></i> Squadre
+            </button>
+            <button onclick="navigateTo('giocatori')" class="flex flex-col items-center p-1 text-slate-600 dark:text-slate-300">
+                <i data-lucide="users" class="w-4 h-4 text-purple-500"></i> Player
+            </button>
+            <button onclick="navigateTo('compare')" class="flex flex-col items-center p-1 text-slate-600 dark:text-slate-300">
+                <i data-lucide="git-compare" class="w-4 h-4 text-rose-500"></i> Vs
+            </button>
+            <button onclick="openAddModal()" class="flex flex-col items-center p-1 text-brand-600 dark:text-brand-500 font-bold">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i> Nuovo
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main id="appContainer" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Injected View -->
+    </main>
+
+    <!-- Modal Form Component for Entities -->
+    <div id="entityModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                <h3 id="modalTitle" class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"></h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div id="modalBody" class="p-6 overflow-y-auto space-y-4 text-slate-800 dark:text-slate-200">
+                <!-- Dynamic Form -->
+            </div>
+            <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30 flex justify-between items-center">
+                <div id="modalExtraActions"></div>
+                <div class="flex gap-3">
+                    <button onclick="closeModal()" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-medium">Annulla</button>
+                    <button id="modalSaveBtn" onclick="saveEntityForm()" class="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-sm font-semibold shadow-md shadow-brand-600/30">Salva Dati</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Input for Backup File Import -->
+    <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="handleFileImport(event)">
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-6 text-xs text-slate-500 dark:text-slate-400">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+                <span class="font-bold text-slate-700 dark:text-slate-200">BasketPedia Intelligence</span> &copy; 2026 — Wikipedia-Style Connected Basketball Database
+            </div>
+            <div class="flex items-center gap-4 flex-wrap justify-center">
+                <button onclick="exportDatabaseJSON()" class="hover:text-brand-500 flex items-center gap-1 font-medium">
+                    <i data-lucide="download" class="w-3.5 h-3.5"></i> Esporta Backup JSON
+                </button>
+                <span>•</span>
+                <button onclick="triggerImportJSON()" class="hover:text-brand-500 flex items-center gap-1 font-medium">
+                    <i data-lucide="upload" class="w-3.5 h-3.5"></i> Importa JSON
+                </button>
+                <span>•</span>
+                <button onclick="resetToSampleData()" class="hover:text-rose-500 flex items-center gap-1 font-medium">
+                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset Dati
+                </button>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        /* -------------------------------------------------------------------------- */
+        /* SAMPLE RICH DATASET                                                         */
+        /* -------------------------------------------------------------------------- */
+        const SAMPLE_DATA = {
+            leagues: [
+                {
+                    id: 'league-nba',
+                    name: 'NBA (National Basketball Association)',
+                    logo: 'https://upload.wikimedia.org/wikipedia/en/0/03/National_Basketball_Association_logo.svg',
+                    country: '🇺🇸 USA',
+                    tier: 'Mondiale - Tier 1',
+                    weight: 3.0,
+                    description: 'La principale lega professionistica di pallacanestro degli Stati Uniti d\'America e del Canada, considerata il massimo campionato di basket al mondo.'
+                },
+                {
+                    id: 'league-euroleague',
+                    name: 'EuroLeague Basketball',
+                    logo: 'https://upload.wikimedia.org/wikipedia/en/f/f0/EuroLeague_logo.svg',
+                    country: '🇪🇺 Europa',
+                    tier: 'Continentale - Tier 1',
+                    weight: 2.2,
+                    description: 'La massima competizione europea per club di pallacanestro maschile con i migliori club dell\'Eurozona.'
+                },
+                {
+                    id: 'league-lba',
+                    name: 'LBA Serie A Unipol',
+                    logo: 'https://upload.wikimedia.org/wikipedia/it/9/90/Lega_Basket_Serie_A_logo.svg',
+                    country: '🇮🇹 Italia',
+                    tier: 'Nazionale - Tier 1',
+                    weight: 1.5,
+                    description: 'Il massimo campionato italiano di pallacanestro maschile organizzato dalla Lega Basket Serie A.'
+                }
+            ],
+            teams: [
+                {
+                    id: 'team-lakers',
+                    name: 'Los Angeles Lakers',
+                    logo: 'https://upload.wikimedia.org/wikipedia/commons/3/3c/Los_Angeles_Lakers_logo.svg',
+                    country: '🇺🇸 USA',
+                    founded: 1947,
+                    previousNames: [
+                        { period: '1947-1960', name: 'Minneapolis Lakers' }
+                    ],
+                    history: [
+                        { season: '2019-20', leagueId: 'league-nba', position: 1 },
+                        { season: '2020-21', leagueId: 'league-nba', position: 7 },
+                        { season: '2022-23', leagueId: 'league-nba', position: 4 }
+                    ]
+                },
+                {
+                    id: 'team-olimpia',
+                    name: 'Pallacanestro Olimpia Milano',
+                    logo: 'https://upload.wikimedia.org/wikipedia/it/d/d4/Olimpia_Milano_logo.svg',
+                    country: '🇮🇹 Italia',
+                    founded: 1936,
+                    previousNames: [
+                        { period: '1936-1955', name: 'Borletti Milano' },
+                        { period: '1955-1973', name: 'Simmenthal Milano' },
+                        { period: '2018-2022', name: 'Armani Exchange Milano' },
+                        { period: '2022-Presente', name: 'EA7 Emporio Armani Milano' }
+                    ],
+                    history: [
+                        { season: '2020-21', leagueId: 'league-euroleague', position: 3 },
+                        { season: '2021-22', leagueId: 'league-lba', position: 1 },
+                        { season: '2022-23', leagueId: 'league-lba', position: 1 },
+                        { season: '2023-24', leagueId: 'league-lba', position: 1 }
+                    ]
+                },
+                {
+                    id: 'team-virtus',
+                    name: 'Virtus Pallacanestro Bologna',
+                    logo: 'https://upload.wikimedia.org/wikipedia/it/d/d7/Virtus_Bologna_logo.svg',
+                    country: '🇮🇹 Italia',
+                    founded: 1929,
+                    previousNames: [
+                        { period: '1993-2000', name: 'Kinder Bologna' },
+                        { period: '2019-Presente', name: 'Virtus Segafredo Bologna' }
+                    ],
+                    history: [
+                        { season: '2020-21', leagueId: 'league-lba', position: 1 },
+                        { season: '2021-22', leagueId: 'league-lba', position: 2 },
+                        { season: '2022-23', leagueId: 'league-lba', position: 2 }
+                    ]
+                },
+                {
+                    id: 'team-real',
+                    name: 'Real Madrid Baloncesto',
+                    logo: 'https://upload.wikimedia.org/wikipedia/en/2/22/Real_Madrid_Baloncesto_logo.svg',
+                    country: '🇪🇸 Spagna',
+                    founded: 1931,
+                    previousNames: [],
+                    history: [
+                        { season: '2017-18', leagueId: 'league-euroleague', position: 1 },
+                        { season: '2022-23', leagueId: 'league-euroleague', position: 1 },
+                        { season: '2023-24', leagueId: 'league-euroleague', position: 2 }
+                    ]
+                }
+            ],
+            players: [
+                {
+                    id: 'player-lebron',
+                    name: 'LeBron James',
+                    photo: 'https://upload.wikimedia.org/wikipedia/commons/c/cf/LeBron_James_crop_2023.jpg',
+                    country: '🇺🇸 USA',
+                    birthYear: 1984,
+                    height: 206,
+                    position: 'AG', // Power Forward
+                    jerseyNumber: 23,
+                    history: [
+                        { season: '2019-20', teamId: 'team-lakers', role: 'Ala Grande / Playmaker', pts: 25.3, reb: 7.8, ast: 10.2 },
+                        { season: '2020-21', teamId: 'team-lakers', role: 'Ala Piccola', pts: 25.0, reb: 7.7, ast: 7.8 },
+                        { season: '2022-23', teamId: 'team-lakers', role: 'Ala Grande', pts: 28.9, reb: 8.3, ast: 6.8 }
+                    ]
+                },
+                {
+                    id: 'player-doncic',
+                    name: 'Luka Dončić',
+                    photo: 'https://upload.wikimedia.org/wikipedia/commons/3/3d/Luka_Don%C4%8Di%C4%87_2021.jpg',
+                    country: '🇸🇮 Slovenia',
+                    birthYear: 1999,
+                    height: 201,
+                    position: 'PM', // Point Guard
+                    jerseyNumber: 77,
+                    history: [
+                        { season: '2017-18', teamId: 'team-real', role: 'Playmaker / Guardia', pts: 16.0, reb: 4.8, ast: 4.3 }
+                    ]
+                },
+                {
+                    id: 'player-belinelli',
+                    name: 'Marco Belinelli',
+                    photo: 'https://upload.wikimedia.org/wikipedia/commons/b/b3/Marco_Belinelli_2018.jpg',
+                    country: '🇮🇹 Italia',
+                    birthYear: 1986,
+                    height: 196,
+                    position: 'G', // Shooting Guard
+                    jerseyNumber: 3,
+                    history: [
+                        { season: '2020-21', teamId: 'team-virtus', role: 'Guardia', pts: 14.2, reb: 1.8, ast: 2.1 },
+                        { season: '2021-22', teamId: 'team-virtus', role: 'Guardia', pts: 12.8, reb: 2.0, ast: 2.3 },
+                        { season: '2022-23', teamId: 'team-virtus', role: 'Guardia / Capitano', pts: 13.5, reb: 1.5, ast: 1.8 }
+                    ]
+                },
+                {
+                    id: 'player-datome',
+                    name: 'Luigi Datome',
+                    photo: 'https://upload.wikimedia.org/wikipedia/commons/0/0f/Gigi_Datome_2019.jpg',
+                    country: '🇮🇹 Italia',
+                    birthYear: 1987,
+                    height: 203,
+                    position: 'AP', // Small Forward
+                    jerseyNumber: 70,
+                    history: [
+                        { season: '2021-22', teamId: 'team-olimpia', role: 'Ala Piccola', pts: 9.8, reb: 2.6, ast: 0.9 },
+                        { season: '2022-23', teamId: 'team-olimpia', role: 'Ala Piccola', pts: 8.5, reb: 2.2, ast: 1.1 }
+                    ]
+                },
+                {
+                    id: 'player-ginobili',
+                    name: 'Manu Ginóbili',
+                    photo: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Manu_Ginobili_2017.jpg',
+                    country: '🇦🇷 Argentina',
+                    birthYear: 1977,
+                    height: 198,
+                    position: 'G',
+                    jerseyNumber: 20,
+                    history: [
+                        { season: '2000-01', teamId: 'team-virtus', role: 'Guardia Tiratrice', pts: 17.0, reb: 4.1, ast: 3.0 }
+                    ]
+                }
+            ]
+        };
+
+        /* -------------------------------------------------------------------------- */
+        /* STATE MANAGEMENT & THEME                                                  */
+        /* -------------------------------------------------------------------------- */
+        let db = { leagues: [], teams: [], players: [] };
+        let currentRoute = { page: 'classifiche', id: null };
+
+        function initStorage() {
+            const saved = localStorage.getItem('basketpedia_db_v2');
+            if (saved) {
+                try {
+                    db = JSON.parse(saved);
+                } catch(e) {
+                    db = SAMPLE_DATA;
+                }
+            } else {
+                db = SAMPLE_DATA;
+                saveStorage();
+            }
+
+            // Theme setup
+            if (localStorage.theme === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+            }
+        }
+
+        function saveStorage() {
+            localStorage.setItem('basketpedia_db_v2', JSON.stringify(db));
+        }
+
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+            lucide.createIcons();
+        }
+
+        function resetToSampleData() {
+            if (confirm("Vuoi ripristinare il database ai dati ufficiali di esempio? Tutti i dati aggiunti verranno ripristinati.")) {
+                db = JSON.parse(JSON.stringify(SAMPLE_DATA));
+                saveStorage();
+                render();
+            }
+        }
+
+        /* Backup & Restore JSON */
+        function exportDatabaseJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `BasketPedia_Backup_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function triggerImportJSON() {
+            document.getElementById('importFileInput').click();
+        }
+
+        function handleFileImport(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const imported = JSON.parse(evt.target.result);
+                    if (imported.leagues && imported.teams && imported.players) {
+                        db = imported;
+                        saveStorage();
+                        alert("Database importato con successo!");
+                        render();
+                    } else {
+                        alert("File JSON non valido per BasketPedia.");
+                    }
+                } catch (err) {
+                    alert("Errore nella lettura del file JSON.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* IMAGE RENDERER WITH FALLBACK                                               */
+        /* -------------------------------------------------------------------------- */
+        function renderEntityImage(url, name, className = "w-12 h-12 rounded-xl object-cover") {
+            const initials = name ? name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'BK';
+            
+            if (!url || url.trim() === '') {
+                return `<div class="${className} bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-brand-400 border border-slate-300 dark:border-slate-700 font-extrabold flex items-center justify-center text-xs tracking-wider shadow-inner">${initials}</div>`;
+            }
+
+            return `
+                <img src="${url}" alt="${name}" 
+                     class="${className} object-cover bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm"
+                     onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'${className} bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-brand-400 border border-slate-300 dark:border-slate-700 font-extrabold flex items-center justify-center text-xs tracking-wider\'>${initials}</div>';">
+            `;
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* CALCULATIONS ENGINE & PALMARÈS                                             */
+        /* -------------------------------------------------------------------------- */
+        function getBasePositionPoints(position) {
+            const pos = parseInt(position);
+            if (pos === 1) return 100;
+            if (pos === 2) return 75;
+            if (pos === 3) return 60;
+            if (pos === 4) return 50;
+            if (pos >= 5 && pos <= 8) return 30;
+            return 10;
+        }
+
+        function calculateSeasonPoints(historyItem) {
+            const league = db.leagues.find(l => l.id === historyItem.leagueId);
+            const weight = league ? (league.weight || 1.0) : 1.0;
+            const base = getBasePositionPoints(historyItem.position);
+            return Math.round(base * weight);
+        }
+
+        /* Returns Palmarès summary for Team */
+        function getTeamPalmares(teamId) {
+            const team = db.teams.find(t => t.id === teamId);
+            if (!team || !team.history) return [];
+
+            const trophies = {};
+            team.history.forEach(h => {
+                if (parseInt(h.position) === 1) {
+                    const league = db.leagues.find(l => l.id === h.leagueId);
+                    const lName = league ? league.name : 'Campionato';
+                    trophies[lName] = (trophies[lName] || 0) + 1;
+                }
+            });
+
+            return Object.entries(trophies).map(([leagueName, count]) => `${count}x ${leagueName}`);
+        }
+
+        function getTeamStats(teamId) {
+            const team = db.teams.find(t => t.id === teamId);
+            if (!team) return { totalPoints: 0, titles: 0, seasons: 0, trophies: [] };
+
+            let totalPoints = 0;
+            let titles = 0;
+            const trophies = getTeamPalmares(teamId);
+
+            (team.history || []).forEach(h => {
+                totalPoints += calculateSeasonPoints(h);
+                if (parseInt(h.position) === 1) titles++;
+            });
+
+            return {
+                totalPoints,
+                titles,
+                seasons: team.history ? team.history.length : 0,
+                trophies
+            };
+        }
+
+        /* Returns Palmarès summary for Player based on teams played in */
+        function getPlayerStats(playerId) {
+            const player = db.players.find(p => p.id === playerId);
+            if (!player) return { totalPoints: 0, titles: 0, clubs: 0, trophies: [], avgPts: 0 };
+
+            let totalPoints = 0;
+            let titles = 0;
+            let totalScoredPts = 0;
+            let totalSeasonsTracked = 0;
+            const uniqueClubs = new Set();
+            const playerTrophies = {};
+
+            (player.history || []).forEach(ph => {
+                uniqueClubs.add(ph.teamId);
+                if (ph.pts) {
+                    totalScoredPts += parseFloat(ph.pts);
+                    totalSeasonsTracked++;
+                }
+
+                const team = db.teams.find(t => t.id === ph.teamId);
+                if (team && team.history) {
+                    const seasonHist = team.history.find(th => th.season === ph.season);
+                    if (seasonHist) {
+                        totalPoints += calculateSeasonPoints(seasonHist);
+                        if (parseInt(seasonHist.position) === 1) {
+                            titles++;
+                            const league = db.leagues.find(l => l.id === seasonHist.leagueId);
+                            const lName = league ? league.name : 'Titolo';
+                            playerTrophies[lName] = (playerTrophies[lName] || 0) + 1;
+                        }
+                    }
+                }
+            });
+
+            const trophies = Object.entries(playerTrophies).map(([lName, count]) => `${count}x ${lName}`);
+
+            return {
+                totalPoints,
+                titles,
+                clubs: uniqueClubs.size,
+                trophies,
+                avgPts: totalSeasonsTracked > 0 ? (totalScoredPts / totalSeasonsTracked).toFixed(1) : 'N/A'
+            };
+        }
+
+        /* Helper to get team name at a specific season (including sponsorships) */
+        function getTeamNameForSeason(team, season) {
+            if (!team) return 'N/A';
+            if (!team.previousNames || team.previousNames.length === 0) return team.name;
+
+            const yearStr = season.split('-')[0];
+            const year = parseInt(yearStr.length === 2 ? '20' + yearStr : yearStr);
+
+            for (const pn of team.previousNames) {
+                const parts = pn.period.split('-');
+                const start = parseInt(parts[0]);
+                const end = parts[1] === 'Presente' ? 2099 : parseInt(parts[1]);
+                if (year >= start && year <= end) {
+                    return pn.name;
+                }
+            }
+            return team.name;
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* ROUTING & SEARCH                                                           */
+        /* -------------------------------------------------------------------------- */
+        function navigateTo(page, id = null) {
+            currentRoute = { page, id };
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            render();
+        }
+
+        function updateNavState() {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-slate-100', 'dark:bg-slate-800', 'text-slate-900', 'dark:text-white', 'font-bold');
+            });
+            const activeNav = document.getElementById(`nav-${currentRoute.page}`);
+            if (activeNav) {
+                activeNav.classList.add('bg-slate-100', 'dark:bg-slate-800', 'text-slate-900', 'dark:text-white', 'font-bold');
+            }
+        }
+
+        function handleGlobalSearch(query) {
+            const dropdown = document.getElementById('searchResults');
+            const q = query.trim().toLowerCase();
+
+            if (!q) {
+                dropdown.classList.add('hidden');
+                return;
+            }
+
+            const matchedLeagues = db.leagues.filter(l => l.name.toLowerCase().includes(q) || l.country.toLowerCase().includes(q));
+            const matchedTeams = db.teams.filter(t => t.name.toLowerCase().includes(q) || t.country.toLowerCase().includes(q) || (t.previousNames && t.previousNames.some(pn => pn.name.toLowerCase().includes(q))));
+            const matchedPlayers = db.players.filter(p => p.name.toLowerCase().includes(q) || p.country.toLowerCase().includes(q) || (p.position && p.position.toLowerCase().includes(q)));
+
+            let html = '';
+
+            if (matchedLeagues.length > 0) {
+                html += `<div class="p-2 text-[10px] font-bold text-sky-500 bg-slate-50 dark:bg-slate-900 uppercase tracking-wider">Campionati</div>`;
+                matchedLeagues.forEach(l => {
+                    html += `
+                    <div onclick="navigateTo('leagueDetail', '${l.id}'); closeSearch();" class="p-3 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            ${renderEntityImage(l.logo, l.name, "w-7 h-7 rounded-lg")}
+                            <span class="font-medium text-slate-800 dark:text-slate-200 text-sm">${l.name}</span>
+                        </div>
+                        <span class="text-xs text-slate-400">${l.country}</span>
+                    </div>`;
+                });
+            }
+
+            if (matchedTeams.length > 0) {
+                html += `<div class="p-2 text-[10px] font-bold text-emerald-500 bg-slate-50 dark:bg-slate-900 uppercase tracking-wider">Squadre</div>`;
+                matchedTeams.forEach(t => {
+                    html += `
+                    <div onclick="navigateTo('teamDetail', '${t.id}'); closeSearch();" class="p-3 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            ${renderEntityImage(t.logo, t.name, "w-7 h-7 rounded-lg")}
+                            <span class="font-medium text-slate-800 dark:text-slate-200 text-sm">${t.name}</span>
+                        </div>
+                        <span class="text-xs text-slate-400">${t.country}</span>
+                    </div>`;
+                });
+            }
+
+            if (matchedPlayers.length > 0) {
+                html += `<div class="p-2 text-[10px] font-bold text-purple-500 bg-slate-50 dark:bg-slate-900 uppercase tracking-wider">Giocatori</div>`;
+                matchedPlayers.forEach(p => {
+                    html += `
+                    <div onclick="navigateTo('playerDetail', '${p.id}'); closeSearch();" class="p-3 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            ${renderEntityImage(p.photo, p.name, "w-7 h-7 rounded-full")}
+                            <div>
+                                <span class="font-medium text-slate-800 dark:text-slate-200 text-sm block">${p.name}</span>
+                                <span class="text-[10px] text-slate-400">${p.position || 'N/A'} • ${p.country}</span>
+                            </div>
+                        </div>
+                    </div>`;
+                });
+            }
+
+            if (!html) {
+                html = `<div class="p-4 text-slate-400 text-sm text-center">Nessun risultato per "${query}"</div>`;
+            }
+
+            dropdown.innerHTML = html;
+            dropdown.classList.remove('hidden');
+        }
+
+        function closeSearch() {
+            document.getElementById('searchResults').classList.add('hidden');
+            document.getElementById('searchInput').value = '';
+        }
+
+        document.addEventListener('click', (e) => {
+            const searchContainer = document.getElementById('searchInput')?.parentElement;
+            if (searchContainer && !searchContainer.contains(e.target)) {
+                closeSearch();
+            }
+        });
+
+        /* -------------------------------------------------------------------------- */
+        /* RENDER VIEWS                                                               */
+        /* -------------------------------------------------------------------------- */
+        function render() {
+            updateNavState();
+            const container = document.getElementById('appContainer');
+
+            switch (currentRoute.page) {
+                case 'home':
+                case 'classifiche':
+                    container.innerHTML = renderClassificheView();
+                    break;
+                case 'campionati':
+                    container.innerHTML = renderCampionatiView();
+                    break;
+                case 'leagueDetail':
+                    container.innerHTML = renderLeagueDetailView(currentRoute.id);
+                    break;
+                case 'squadre':
+                    container.innerHTML = renderSquadreView();
+                    break;
+                case 'teamDetail':
+                    container.innerHTML = renderTeamDetailView(currentRoute.id);
+                    break;
+                case 'giocatori':
+                    container.innerHTML = renderGiocatoriView();
+                    break;
+                case 'playerDetail':
+                    container.innerHTML = renderPlayerDetailView(currentRoute.id);
+                    break;
+                case 'compare':
+                    container.innerHTML = renderCompareView();
+                    break;
+                default:
+                    container.innerHTML = renderClassificheView();
+            }
+
+            lucide.createIcons();
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* VIEW 1: CLASSIFICHE & DASHBOARD                                            */
+        /* -------------------------------------------------------------------------- */
+        function renderClassificheView() {
+            const rankedTeams = [...db.teams].map(t => ({
+                ...t,
+                stats: getTeamStats(t.id)
+            })).sort((a, b) => b.stats.totalPoints - a.stats.totalPoints);
+
+            const rankedPlayers = [...db.players].map(p => ({
+                ...p,
+                stats: getPlayerStats(p.id)
+            })).sort((a, b) => b.stats.totalPoints - a.stats.totalPoints);
+
+            return `
+                <div class="space-y-8 animate-fadeIn">
+                    <!-- Hero Banner -->
+                    <div class="bg-gradient-to-r from-brand-900/40 via-slate-900 to-slate-900 border border-brand-500/30 rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-xl text-white">
+                        <div class="absolute -right-10 -bottom-10 text-slate-800/40 pointer-events-none">
+                            <i data-lucide="trophy" class="w-80 h-80"></i>
+                        </div>
+                        <div class="relative z-10 max-w-2xl">
+                            <span class="px-3 py-1 text-[10px] font-bold uppercase tracking-wider bg-brand-500/20 text-brand-400 rounded-full border border-brand-500/30">
+                                Wikipedia Intelligent Ranking Engine
+                            </span>
+                            <h1 class="text-3xl sm:text-4xl font-extrabold mt-3 tracking-tight">
+                                Enciclopedia & Ranking Basket
+                            </h1>
+                            <p class="text-slate-300 mt-2 text-sm leading-relaxed">
+                                Classifica automatizzata interconnessa: i punti delle squadre si calcolano dai piazzamenti e dalla caratura dei tornei; i giocatori accumulano punteggio dalle loro stagioni nei vari club.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Rankings Split Grid -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                        <!-- TOP SQUADRE -->
+                        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-md flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+                                    <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                        <i data-lucide="shield" class="w-5 h-5 text-emerald-500"></i> Leaderboard Squadre
+                                    </h2>
+                                    <button onclick="navigateTo('squadre')" class="text-xs text-brand-500 hover:underline font-semibold flex items-center gap-1">
+                                        Vedi tutte <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                                <div class="mt-4 divide-y divide-slate-100 dark:divide-slate-800/60">
+                                    ${rankedTeams.map((team, idx) => `
+                                        <div class="py-3 flex items-center justify-between group hover:bg-slate-50 dark:hover:bg-slate-800/40 px-3 rounded-xl transition">
+                                            <div class="flex items-center gap-3">
+                                                <span class="w-7 h-7 flex items-center justify-center font-black rounded-lg text-xs ${idx === 0 ? 'bg-amber-400 text-slate-950' : idx === 1 ? 'bg-slate-300 text-slate-950' : idx === 2 ? 'bg-amber-700 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}">
+                                                    ${idx + 1}
+                                                </span>
+                                                ${renderEntityImage(team.logo, team.name, "w-9 h-9 rounded-xl")}
+                                                <div>
+                                                    <span class="wiki-link" onclick="navigateTo('teamDetail', '${team.id}')">${team.name}</span>
+                                                    <div class="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
+                                                        <span>${team.country}</span>
+                                                        ${team.stats.trophies.length > 0 ? `<span>•</span> <span class="text-amber-500 font-medium">${team.stats.trophies.join(', ')}</span>` : ''}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="text-right">
+                                                <span class="text-lg font-black text-brand-500">${team.stats.totalPoints}</span>
+                                                <span class="text-[10px] text-slate-400 block uppercase font-bold">punti</span>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TOP GIOCATORI -->
+                        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-md flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+                                    <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                        <i data-lucide="users" class="w-5 h-5 text-purple-500"></i> Leaderboard Giocatori
+                                    </h2>
+                                    <button onclick="navigateTo('giocatori')" class="text-xs text-brand-500 hover:underline font-semibold flex items-center gap-1">
+                                        Vedi tutti <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                                <div class="mt-4 divide-y divide-slate-100 dark:divide-slate-800/60">
+                                    ${rankedPlayers.map((player, idx) => `
+                                        <div class="py-3 flex items-center justify-between group hover:bg-slate-50 dark:hover:bg-slate-800/40 px-3 rounded-xl transition">
+                                            <div class="flex items-center gap-3">
+                                                <span class="w-7 h-7 flex items-center justify-center font-black rounded-lg text-xs ${idx === 0 ? 'bg-amber-400 text-slate-950' : idx === 1 ? 'bg-slate-300 text-slate-950' : idx === 2 ? 'bg-amber-700 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}">
+                                                    ${idx + 1}
+                                                </span>
+                                                ${renderEntityImage(player.photo, player.name, "w-9 h-9 rounded-full")}
+                                                <div>
+                                                    <span class="wiki-link" onclick="navigateTo('playerDetail', '${player.id}')">${player.name}</span>
+                                                    <div class="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
+                                                        <span>${player.position || 'N/A'} • ${player.country}</span>
+                                                        ${player.stats.trophies.length > 0 ? `<span>•</span> <span class="text-amber-500 font-medium">${player.stats.trophies.join(', ')}</span>` : ''}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="text-right">
+                                                <span class="text-lg font-black text-purple-500">${player.stats.totalPoints}</span>
+                                                <span class="text-[10px] text-slate-400 block uppercase font-bold">punti storici</span>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            `;
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* VIEW 2: CAMPIONATI (LEAGUES)                                               */
+        /* -------------------------------------------------------------------------- */
+        function renderCampionatiView() {
+            return `
+                <div class="space-y-6 animate-fadeIn">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                                <i data-lucide="award" class="w-6 h-6 text-sky-500"></i> Campionati & Competizioni
+                            </h1>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm">Tornei con peso punti personalizzabile</p>
+                        </div>
+                        <button onclick="openAddModal('league')" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-sm font-semibold flex items-center gap-2 shadow-md">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Nuovo Campionato
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        ${db.leagues.map(league => {
+                            const teamsInLeague = db.teams.filter(t => (t.history || []).some(h => h.leagueId === league.id)).length;
+                            return `
+                                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 hover:border-slate-300 dark:hover:border-slate-700 transition shadow-md flex flex-col justify-between">
+                                    <div>
+                                        <div class="flex justify-between items-start">
+                                            ${renderEntityImage(league.logo, league.name, "w-14 h-14 rounded-2xl")}
+                                            <span class="px-2.5 py-1 text-xs font-extrabold bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-800 rounded-full">
+                                                Moltiplicatore x${league.weight}
+                                            </span>
+                                        </div>
+                                        <h3 class="text-xl font-bold text-slate-900 dark:text-white mt-4 wiki-link" onclick="navigateTo('leagueDetail', '${league.id}')">${league.name}</h3>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">${league.country} • ${league.tier}</p>
+                                        <p class="text-slate-600 dark:text-slate-300 text-xs mt-3 line-clamp-3 leading-relaxed">${league.description}</p>
+                                    </div>
+                                    <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs text-slate-500 dark:text-slate-400">
+                                        <span>${teamsInLeague} squadre collegate</span>
+                                        <button onclick="navigateTo('leagueDetail', '${league.id}')" class="text-brand-500 hover:underline flex items-center gap-1 font-semibold">
+                                            Scheda Wiki <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        /* LEAGUE DETAIL WIKI PAGE WITH INFOBOX */
+        function renderLeagueDetailView(leagueId) {
+            const league = db.leagues.find(l => l.id === leagueId);
+            if (!league) return `<div class="text-slate-900 dark:text-white">Campionato non trovato</div>`;
+
+            const participatingTeams = db.teams.filter(t => (t.history || []).some(h => h.leagueId === leagueId));
+
+            const winners = [];
+            db.teams.forEach(t => {
+                (t.history || []).forEach(h => {
+                    if (h.leagueId === leagueId && parseInt(h.position) === 1) {
+                        winners.push({ season: h.season, team: t });
+                    }
+                });
+            });
+            winners.sort((a, b) => b.season.localeCompare(a.season));
+
+            return `
+                <div class="space-y-6 animate-fadeIn">
+                    <div class="flex items-center gap-2 text-xs text-slate-400">
+                        <span class="cursor-pointer hover:text-slate-900 dark:hover:text-white" onclick="navigateTo('campionati')">Campionati</span>
+                        <span>/</span>
+                        <span class="text-brand-500 font-semibold">${league.name}</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        
+                        <!-- Left Content -->
+                        <div class="lg:col-span-2 space-y-6">
+                            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-md">
+                                <div class="flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between">
+                                    <div class="flex items-center gap-5">
+                                        ${renderEntityImage(league.logo, league.name, "w-20 h-20 rounded-2xl")}
+                                        <div>
+                                            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">${league.name}</h1>
+                                            <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">${league.country} • Tier: ${league.tier}</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="openEditModal('league', '${league.id}')" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-2">
+                                        <i data-lucide="edit-3" class="w-4 h-4"></i> Modifica Modello
+                                    </button>
+                                </div>
+                                <div class="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+                                    <h2 class="text-base font-bold text-slate-900 dark:text-white mb-2">Descrizione Enciclopedica</h2>
+                                    <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">${league.description}</p>
+                                </div>
+                            </div>
+
+                            <!-- Roll of Honor (Albo d'Oro) -->
+                            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-md">
+                                <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                                    <i data-lucide="trophy" class="w-5 h-5 text-amber-500"></i> Albo d'Oro Campioni
+                                </h2>
+                                ${winners.length === 0 ? '<p class="text-slate-400 text-sm">Nessun vincitore registrato.</p>' : `
+                                    <div class="divide-y divide-slate-100 dark:divide-slate-800">
+                                        ${winners.map(w => `
+                                            <div class="py-3 flex items-center justify-between">
+                                                <span class="font-mono text-sm font-bold text-brand-500">${w.season}</span>
+                                                <div class="flex items-center gap-3">
+                                                    ${renderEntityImage(w.team.logo, w.team.name, "w-6 h-6 rounded-md")}
+                                                    <span class="wiki-link text-sm font-semibold" onclick="navigateTo('teamDetail', '${w.team.id}')">${w.team.name}</span>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                `}
+                            </div>
+                        </div>
+
+                        <!-- Right Infobox Wikipedia Style -->
+                        <div class="space-y-6">
+                            <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-md">
+                                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">Wikipedia Infobox</h3>
+                                <dl class="space-y-3 text-xs">
+                                    <div class="flex justify-between">
+                                        <dt class="text-slate-400">Nazione:</dt>
+                                        <dd class="font-semibold text-slate-800 dark:text-slate-200">${league.country}</dd>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <dt class="text-slate-400">Livello / Tier:</dt>
+                                        <dd class="font-semibold text-slate-800 dark:text-slate-200">${league.tier}</dd>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <dt class="text-slate-400">Moltiplicatore Punti:</dt>
+                                        <dd class="font-bold text-brand-500">x${league.weight}</dd>
+                                    </div>
+                                </dl>
+                            </div>
+
+                            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-md">
+                                <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-3">Squadre Partecipanti (${participatingTeams.length})</h3>
+                                <div class="space-y-2">
+                                    ${participatingTeams.map(t => `
+                                        <div onclick="navigateTo('teamDetail', '${t.id}')" class="p-2.5 bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl cursor-pointer flex items-center justify-between transition">
+                                            <div class="flex items-center gap-3">
+                                                ${renderEntityImage(t.logo, t.name, "w-6 h-6 rounded-md")}
+                                                <span class="text-xs font-medium text-slate-800 dark:text-slate-200">${t.name}</span>
+                                            </div>
+                                            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            `;
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* VIEW 3: SQUADRE (TEAMS)                                                    */
+        /* -------------------------------------------------------------------------- */
+        function renderSquadreView() {
+            return `
+                <div class="space-y-6 animate-fadeIn">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                                <i data-lucide="shield" class="w-6 h-6 text-emerald-500"></i> Squadre di Pallacanestro
+                            </h1>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm">Club, storici e cambi sponsorizzazioni</p>
+                        </div>
+                        <button onclick="openAddModal('team')" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-sm font-semibold flex items-center gap-2 shadow-md">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Nuova Squadra
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        ${db.teams.map(team => {
+                            const stats = getTeamStats(team.id);
+                            return `
+                                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 hover:border-slate-300 dark:hover:border-slate-700 transition shadow-md flex flex-col justify-between">
+                                    <div>
+                                        <div class="flex justify-between items-start">
+                                            ${renderEntityImage(team.logo, team.name, "w-14 h-14 rounded-2xl")}
+                                            <div class="text-right">
+                                                <span class="text-xl font-black text-brand-500 block">${stats.totalPoints}</span>
+                                                <span class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Punti Wiki</span>
+                                            </div>
+                                        </div>
+                                        <h3 class="text-xl font-bold text-slate-900 dark:text-white mt-4 wiki-link" onclick="navigateTo('teamDetail', '${team.id}')">${team.name}</h3>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">${team.country} • Fondata nel ${team.founded || 'N/A'}</p>
+                                        
+                                        ${stats.trophies.length > 0 ? `
+                                            <div class="mt-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 p-2.5 rounded-xl text-xs font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-2">
+                                                <i data-lucide="trophy" class="w-4 h-4 shrink-0"></i> ${stats.trophies.join(', ')}
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                    <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs text-slate-500 dark:text-slate-400">
+                                        <span>${stats.seasons} stagioni registrate</span>
+                                        <button onclick="navigateTo('teamDetail', '${team.id}')" class="text-brand-500 hover:underline flex items-center gap-1 font-semibold">
+                                            Profilo completo <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        /* TEAM DETAIL WIKI PAGE */
+        function renderTeamDetailView(teamId) {
+            const team = db.teams.find(t => t.id === teamId);
+            if (!team) return `<div class="text-slate-900 dark:text-white">Squadra non trovata</div>`;
+
+            const stats = getTeamStats(team.id);
+            const roster = db.players.filter(p => (p.history || []).some(h => h.teamId === teamId));
+
+            return `
+                <div class="space-y-6 animate-fadeIn">
+                    <div class="flex items-center gap-2 text-xs text-slate-400">
+                        <span class="cursor-pointer hover:text-slate-900 dark:hover:text-white" onclick="navigateTo('squadre')">Squadre</span>
+                        <span>/</span>
+                        <span class="text-brand-500 font-semibold">${team.name}</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        
+                        <!-- Left Main Column -->
+                        <div class="lg:col-span-2 space-y-6">
+                            
+                            <!-- Header Card -->
+                            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-md flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between">
+                                <div class="flex items-center gap-5">
+                                    ${renderEntityImage(team.logo, team.name, "w-20 h-20 rounded-2xl")}
+                                    <div>
+                                        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">${team.name}</h1>
+                                        <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">${team.country} • Fondata nel ${team.founded || 'N/A'}</p>
+                                    </div>
+                                </div>
+                                <button onclick="openEditModal('team', '${team.id}')" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-2">
+                                    <i data-lucide="edit-3" class="w-4 h-4"></i> Modifica Scheda
+                                </button>
+                            </div>
+
+                            <!-- Cronistoria Campionati Table -->
+                            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-md">
+                                <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                                    <i data-lucide="history" class="w-5 h-5 text-brand-500"></i> Cronistoria nei Campionati
+                                </h2>
+                                ${!team.history || team.history.length === 0 ? '<p class="text-slate-400 text-sm">Nessuna stagione registrata.</p>' : `
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-left text-sm">
+                                            <thead>
+                                                <tr class="text-slate-400 border-b border-slate-200 dark:border-slate-800 text-xs uppercase">
+                                                    <th class="py-3 px-2">Stagione</th>
+                                                    <th class="py-3 px-2">Campionato</th>
+                                                    <th class="py-3 px-2">Piazzamento</th>
+                                                    <th class="py-3 px-2 text-right">Punti Wiki</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                                                ${team.history.map(h => {
+                                                    const league = db.leagues.find(l => l.id === h.leagueId);
+                                                    const seasonPts = calculateSeasonPoints(h);
+                                                    return `
+                                                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30">
+                                                            <td class="py-3 px-2 font-mono text-slate-700 dark:text-slate-300 font-bold">${h.season}</td>
+                                                            <td class="py-3 px-2">
+                                                                ${league ? `<span class="wiki-link" onclick="navigateTo('leagueDetail', '${league.id}')">${league.name}</span>` : 'N/A'}
+                                                            </td>
+                                                            <td class="py-3 px-2 font-bold ${parseInt(h.position) === 1 ? 'text-amber-500' : 'text-slate-700 dark:text-slate-300'}">
+                                                                ${parseInt(h.position) === 1 ? '🏆 1° Posto (Campione)' : `${h.position}° Posto`}
+                                                            </td>
+                                                            <td class="py-3 px-2 text-right font-bold text-brand-500">+${seasonPts}</td>
+                                                        </tr>
+                                                    `;
+                                                }).join('')}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                `}
+                            </div>
+
+                            <!-- Nomi Precedenti Timeline -->
+                            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-md">
+                                <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-3">Storico Denominazioni e Sponsorizzazioni</h2>
+                                ${!team.previousNames || team.previousNames.length === 0 ? '<p class="text-slate-400 text-sm">Nessuna cambio di denominazione storicizzato.</p>' : `
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                                        ${team.previousNames.map(pn => `
+                                            <div class="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                                                <span class="font-semibold text-slate-800 dark:text-slate-200 text-xs">${pn.name}</span>
+                                                <span class="text-xs font-mono font-bold text-brand-500">${pn.period}</span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                `}
+                            </div>
+                        </div>
+
+                        <!-- Right Column Wikipedia Infobox -->
+                        <div class="space-y-6">
+                            <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-md">
+                                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">Wikipedia Infobox</h3>
+                                <dl class="space-y-3 text-xs">
+                                    <div class="flex justify-between">
+                                        <dt class="text-slate-400">Nazione:</dt>
+                                        <dd class="font-semibold text-slate-800 dark:text-slate-200">${team.country}</dd>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <dt class="text-slate-400">Anno Fondazione:</dt>
+                                        <dd class="font-semibold text-slate-800 dark:text-slate-200">${team.founded || 'N/A'}</dd>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <dt class="text-slate-400">Punteggio Totale:</dt>
+                                        <dd class="font-extrabold text-brand-500">${stats.totalPoints} pt</dd>
+                                    </div>
+                                </dl>
+                                ${stats.trophies.length > 0 ? `
+                                    <div class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800">
+                                        <span class="text-slate-400 block text-[10px] font-bold uppercase mb-1">Palmarès Ufficiale:</span>
+                                        <ul class="space-y-1 text-xs text-amber-500 font-bold">
+                                            ${stats.trophies.map(tr => `<li class="flex items-center gap-1.5"><i data-lucide="trophy" class="w-3.5 h-3.5"></i> ${tr}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-md">
+                                <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-4">Giocatori nel Database (${roster.length})</h3>
+                                ${roster.length === 0 ? '<p class="text-slate-400 text-xs">Nessun giocatore registrato in questo club.</p>' : `
+                                    <div class="space-y-2">
+                                        ${roster.map(p => `
+                                            <div onclick="navigateTo('playerDetail', '${p.id}')" class="p-2.5 bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl cursor-pointer flex items-center justify-between transition">
+                                                <div class="flex items-center gap-3">
+                                                    ${renderEntityImage(p.photo, p.name, "w-7 h-7 rounded-full")}
+                                                    <div>
+                                                        <span class="text-xs font-semibold text-slate-800 dark:text-slate-200 block">${p.name}</span>
+                                                        <span class="text-[10px] text-slate-400">${p.position || 'Giocatore'}</span>
+                                                    </div>
+                                                </div>
+                                                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                `}
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            `;
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* VIEW 4: GIOCATORI (PLAYERS)                                                */
+        /* -------------------------------------------------------------------------- */
+        function renderGiocatoriView() {
+            return `
+                <div class="space-y-6 animate-fadeIn">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                                <i data-lucide="users" class="w-6 h-6 text-purple-500"></i> Giocatori di Pallacanestro
+                            </h1>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm">Anagrafica, carriere interconnesse e media punti</p>
+                        </div>
+                        <button onclick="openAddModal('player')" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-sm font-semibold flex items-center gap-2 shadow-md">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Nuovo Giocatore
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        ${db.players.map(player => {
+                            const stats = getPlayerStats(player.id);
+                            return `
+                                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 hover:border-slate-300 dark:hover:border-slate-700 transition shadow-md flex flex-col justify-between">
+                                    <div>
+                                        <div class="flex justify-between items-start">
+                                            ${renderEntityImage(player.photo, player.name, "w-16 h-16 rounded-full")}
+                                            <div class="text-right">
+                                                <span class="text-xl font-black text-purple-500 block">${stats.totalPoints}</span>
+                                                <span class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Punti Carriera</span>
+                                            </div>
+                                        </div>
+                                        <h3 class="text-xl font-bold text-slate-900 dark:text-white mt-4 wiki-link" onclick="navigateTo('playerDetail', '${player.id}')">${player.name}</h3>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">${player.position || 'N/A'} • ${player.country} • #${player.jerseyNumber || '-'}</p>
+                                        
+                                        ${stats.trophies.length > 0 ? `
+                                            <div class="mt-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 p-2.5 rounded-xl text-xs font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-2">
+                                                <i data-lucide="trophy" class="w-4 h-4 shrink-0"></i> ${stats.trophies.join(', ')}
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                    <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs text-slate-500 dark:text-slate-400">
+                                        <span>Avg Scored: <strong class="text-slate-700 dark:text-slate-200">${stats.avgPts} PPG</strong></span>
+                                        <button onclick="navigateTo('playerDetail', '${player.id}')" class="text-brand-500 hover:underline flex items-center gap-1 font-semibold">
+                                            Scheda Carriera <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        /* PLAYER DETAIL WIKI PAGE */
+        function renderPlayerDetailView(playerId) {
+            const player = db.players.find(p => p.id === playerId);
+            if (!player) return `<div class="text-slate-900 dark:text-white">Giocatore non trovato</div>`;
+
+            const stats = getPlayerStats(playerId);
+
+            return `
+                <div class="space-y-6 animate-fadeIn">
+                    <div class="flex items-center gap-2 text-xs text-slate-400">
+                        <span class="cursor-pointer hover:text-slate-900 dark:hover:text-white" onclick="navigateTo('giocatori')">Giocatori</span>
+                        <span>/</span>
+                        <span class="text-brand-500 font-semibold">${player.name}</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        
+                        <!-- Main Left Section -->
+                        <div class="lg:col-span-2 space-y-6">
+                            
+                            <!-- Header Card -->
+                            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-md flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between">
+                                <div class="flex items-center gap-5">
+                                    ${renderEntityImage(player.photo, player.name, "w-20 h-20 rounded-full")}
+                                    <div>
+                                        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">${player.name}</h1>
+                                        <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">${player.position || 'N/A'} • ${player.country} • Maglia #${player.jerseyNumber || '-'}</p>
+                                    </div>
+                                </div>
+                                <button onclick="openEditModal('player', '${player.id}')" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-2">
+                                    <i data-lucide="edit-3" class="w-4 h-4"></i> Modifica Scheda
+                                </button>
+                            </div>
+
+                            <!-- Career Timeline & Stats Table -->
+                            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-md">
+                                <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                                    <i data-lucide="history" class="w-5 h-5 text-purple-500"></i> Career Timeline e Statistiche per Stagione
+                                </h2>
+
+                                ${!player.history || player.history.length === 0 ? '<p class="text-slate-400 text-sm">Nessuna stagione registrata.</p>' : `
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-left text-sm">
+                                            <thead>
+                                                <tr class="text-slate-400 border-b border-slate-200 dark:border-slate-800 text-xs uppercase">
+                                                    <th class="py-3 px-2">Stagione</th>
+                                                    <th class="py-3 px-2">Club (Nome dell'Epoca)</th>
+                                                    <th class="py-3 px-2">Media PTS</th>
+                                                    <th class="py-3 px-2">Risultato Club</th>
+                                                    <th class="py-3 px-2 text-right">Punti Wiki</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                                                ${player.history.map(ph => {
+                                                    const team = db.teams.find(t => t.id === ph.teamId);
+                                                    const teamSeasonName = team ? getTeamNameForSeason(team, ph.season) : 'N/A';
+                                                    let seasonResultText = 'N/A';
+                                                    let ptsAwarded = 0;
+
+                                                    if (team && team.history) {
+                                                        const seasonHist = team.history.find(th => th.season === ph.season);
+                                                        if (seasonHist) {
+                                                            const league = db.leagues.find(l => l.id === seasonHist.leagueId);
+                                                            ptsAwarded = calculateSeasonPoints(seasonHist);
+                                                            seasonResultText = parseInt(seasonHist.position) === 1 ? '🏆 Campione' : `${seasonHist.position}° in ${league ? league.name : 'Lega'}`;
+                                                        }
+                                                    }
+
+                                                    return `
+                                                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30">
+                                                            <td class="py-3 px-2 font-mono text-slate-700 dark:text-slate-300 font-bold">${ph.season}</td>
+                                                            <td class="py-3 px-2">
+                                                                ${team ? `<span class="wiki-link" onclick="navigateTo('teamDetail', '${team.id}')">${teamSeasonName}</span>` : 'N/A'}
+                                                            </td>
+                                                            <td class="py-3 px-2 font-semibold text-slate-700 dark:text-slate-300">${ph.pts ? ph.pts + ' PPG' : '-'}</td>
+                                                            <td class="py-3 px-2 text-slate-600 dark:text-slate-400">${seasonResultText}</td>
+                                                            <td class="py-3 px-2 text-right font-bold text-purple-500">+${ptsAwarded}</td>
+                                                        </tr>
+                                                    `;
+                                                }).join('')}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                `}
+                            </div>
+                        </div>
+
+                        <!-- Right Column Infobox -->
+                        <div class="space-y-6">
+                            <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-md">
+                                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">Wikipedia Infobox</h3>
+                                <dl class="space-y-3 text-xs">
+                                    <div class="flex justify-between">
+                                        <dt class="text-slate-400">Nazionalità:</dt>
+                                        <dd class="font-semibold text-slate-800 dark:text-slate-200">${player.country}</dd>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <dt class="text-slate-400">Ruolo:</dt>
+                                        <dd class="font-semibold text-slate-800 dark:text-slate-200">${player.position || 'N/A'}</dd>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <dt class="text-slate-400">Altezza:</dt>
+                                        <dd class="font-semibold text-slate-800 dark:text-slate-200">${player.height ? player.height + ' cm' : 'N/A'}</dd>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <dt class="text-slate-400">Anno di Nascita:</dt>
+                                        <dd class="font-semibold text-slate-800 dark:text-slate-200">${player.birthYear || 'N/A'}</dd>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <dt class="text-slate-400">Punti Carriera:</dt>
+                                        <dd class="font-extrabold text-purple-500">${stats.totalPoints} pt</dd>
+                                    </div>
+                                </dl>
+                                ${stats.trophies.length > 0 ? `
+                                    <div class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800">
+                                        <span class="text-slate-400 block text-[10px] font-bold uppercase mb-1">Palmarès Vinto:</span>
+                                        <ul class="space-y-1 text-xs text-amber-500 font-bold">
+                                            ${stats.trophies.map(tr => `<li class="flex items-center gap-1.5"><i data-lucide="trophy" class="w-3.5 h-3.5"></i> ${tr}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            `;
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* VIEW 5: HEAD-TO-HEAD COMPARISON (CONFRONTO)                                */
+        /* -------------------------------------------------------------------------- */
+        let compareState = { entity1: '', entity2: '', type: 'players' };
+
+        function renderCompareView() {
+            const list = compareState.type === 'players' ? db.players : db.teams;
+
+            const e1 = list.find(item => item.id === compareState.entity1);
+            const e2 = list.find(item => item.id === compareState.entity2);
+
+            return `
+                <div class="space-y-6 animate-fadeIn">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                                <i data-lucide="git-compare" class="w-6 h-6 text-rose-500"></i> Modalità Confronto Diretto
+                            </h1>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm">Metri a confronto statistiche, trofei e punti ranking</p>
+                        </div>
+
+                        <!-- Switcher Player or Team -->
+                        <div class="bg-slate-200 dark:bg-slate-800 p-1 rounded-xl flex gap-1">
+                            <button onclick="setCompareType('players')" class="px-3 py-1.5 rounded-lg text-xs font-bold ${compareState.type === 'players' ? 'bg-brand-600 text-white' : 'text-slate-500'}">Giocatori</button>
+                            <button onclick="setCompareType('teams')" class="px-3 py-1.5 rounded-lg text-xs font-bold ${compareState.type === 'teams' ? 'bg-brand-600 text-white' : 'text-slate-500'}">Squadre</button>
+                        </div>
+                    </div>
+
+                    <!-- Selection Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-md">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Seleziona Primo Entità</label>
+                            <select onchange="compareState.entity1 = this.value; render();" class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-800 dark:text-slate-200">
+                                <option value="">-- Scegli --</option>
+                                ${list.map(item => `<option value="${item.id}" ${compareState.entity1 === item.id ? 'selected' : ''}>${item.name}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Seleziona Secondo Entità</label>
+                            <select onchange="compareState.entity2 = this.value; render();" class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-800 dark:text-slate-200">
+                                <option value="">-- Scegli --</option>
+                                ${list.map(item => `<option value="${item.id}" ${compareState.entity2 === item.id ? 'selected' : ''}>${item.name}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Comparison Result Display -->
+                    ${e1 && e2 ? renderComparisonResult(e1, e2, compareState.type) : '<p class="text-center text-slate-400 py-12 text-sm">Seleziona due elementi per avviare il confronto diretto.</p>'}
+                </div>
+            `;
+        }
+
+        function setCompareType(type) {
+            compareState = { entity1: '', entity2: '', type };
+            render();
+        }
+
+        function renderComparisonResult(e1, e2, type) {
+            if (type === 'players') {
+                const s1 = getPlayerStats(e1.id);
+                const s2 = getPlayerStats(e2.id);
+
+                return `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        ${renderPlayerCardCompare(e1, s1)}
+                        ${renderPlayerCardCompare(e2, s2)}
+                    </div>
+                `;
+            } else {
+                const s1 = getTeamStats(e1.id);
+                const s2 = getTeamStats(e2.id);
+
+                return `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        ${renderTeamCardCompare(e1, s1)}
+                        ${renderTeamCardCompare(e2, s2)}
+                    </div>
+                `;
+            }
+        }
+
+        function renderPlayerCardCompare(p, stats) {
+            return `
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-md text-center">
+                    ${renderEntityImage(p.photo, p.name, "w-24 h-24 rounded-full mx-auto shadow-md")}
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mt-4">${p.name}</h3>
+                    <p class="text-xs text-slate-400">${p.position || 'N/A'} • ${p.country}</p>
+
+                    <div class="mt-6 space-y-3 text-left">
+                        <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl flex justify-between items-center text-xs">
+                            <span class="text-slate-400">Punti Ranking:</span>
+                            <span class="font-extrabold text-purple-500 text-base">${stats.totalPoints} pt</span>
+                        </div>
+                        <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl flex justify-between items-center text-xs">
+                            <span class="text-slate-400">Media Punti Segnati:</span>
+                            <span class="font-bold text-slate-800 dark:text-slate-200">${stats.avgPts} PPG</span>
+                        </div>
+                        <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl flex justify-between items-center text-xs">
+                            <span class="text-slate-400">Trofei e Scudetti:</span>
+                            <span class="font-bold text-amber-500">${stats.trophies.length > 0 ? stats.trophies.join(', ') : 'Nessuno'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTeamCardCompare(t, stats) {
+            return `
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-md text-center">
+                    ${renderEntityImage(t.logo, t.name, "w-24 h-24 rounded-2xl mx-auto shadow-md")}
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mt-4">${t.name}</h3>
+                    <p class="text-xs text-slate-400">${t.country} • Fondata nel ${t.founded || 'N/A'}</p>
+
+                    <div class="mt-6 space-y-3 text-left">
+                        <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl flex justify-between items-center text-xs">
+                            <span class="text-slate-400">Punti Ranking:</span>
+                            <span class="font-extrabold text-brand-500 text-base">${stats.totalPoints} pt</span>
+                        </div>
+                        <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl flex justify-between items-center text-xs">
+                            <span class="text-slate-400">Stagioni Registrate:</span>
+                            <span class="font-bold text-slate-800 dark:text-slate-200">${stats.seasons}</span>
+                        </div>
+                        <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl flex justify-between items-center text-xs">
+                            <span class="text-slate-400">Titoli Vinti:</span>
+                            <span class="font-bold text-amber-500">${stats.trophies.length > 0 ? stats.trophies.join(', ') : 'Nessuno'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* MODAL & FORM BUILDERS                                                      */
+        /* -------------------------------------------------------------------------- */
+        let activeEditing = { type: null, id: null };
+
+        function openAddModal(defaultType = 'league') {
+            activeEditing = { type: defaultType, id: null };
+            setupModalForm();
+            document.getElementById('entityModal').classList.remove('hidden');
+        }
+
+        function openEditModal(type, id) {
+            activeEditing = { type, id };
+            setupModalForm();
+            document.getElementById('entityModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('entityModal').classList.add('hidden');
+        }
+
+        function updateFormImagePreview(urlInputId, previewContainerId, isRound = false) {
+            const url = document.getElementById(urlInputId).value;
+            const container = document.getElementById(previewContainerId);
+            container.innerHTML = renderEntityImage(url, 'Preview', isRound ? "w-12 h-12 rounded-full" : "w-12 h-12 rounded-xl");
+        }
+
+        function setupModalForm() {
+            const titleEl = document.getElementById('modalTitle');
+            const bodyEl = document.getElementById('modalBody');
+            const extraActionsEl = document.getElementById('modalExtraActions');
+            const isEdit = !!activeEditing.id;
+
+            extraActionsEl.innerHTML = isEdit ? `
+                <button type="button" onclick="deleteCurrentEntity()" class="text-xs text-rose-500 hover:underline flex items-center gap-1 font-semibold">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Elimina
+                </button>
+            ` : '';
+
+            let selectorHtml = '';
+            if (!isEdit) {
+                selectorHtml = `
+                    <div class="mb-4 pb-4 border-b border-slate-200 dark:border-slate-800 flex gap-2">
+                        <button type="button" onclick="switchFormType('league')" class="px-3 py-1.5 rounded-lg text-xs font-bold ${activeEditing.type === 'league' ? 'bg-brand-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}">Campionato</button>
+                        <button type="button" onclick="switchFormType('team')" class="px-3 py-1.5 rounded-lg text-xs font-bold ${activeEditing.type === 'team' ? 'bg-brand-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}">Squadra</button>
+                        <button type="button" onclick="switchFormType('player')" class="px-3 py-1.5 rounded-lg text-xs font-bold ${activeEditing.type === 'player' ? 'bg-brand-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}">Giocatore</button>
+                    </div>
+                `;
+            }
+
+            if (activeEditing.type === 'league') {
+                const data = isEdit ? db.leagues.find(l => l.id === activeEditing.id) : { name: '', logo: '', country: '🇮🇹 Italia', tier: 'Nazionale', weight: 1.5, description: '' };
+                titleEl.innerText = isEdit ? `Modifica: ${data.name}` : 'Nuovo Campionato';
+
+                bodyEl.innerHTML = selectorHtml + `
+                    <form id="activeForm" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nome Campionato</label>
+                            <input type="text" id="leagueName" value="${data.name}" required class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">URL Logo Immagine</label>
+                            <div class="flex gap-3 items-center">
+                                <input type="url" id="leagueLogo" value="${data.logo || ''}" oninput="updateFormImagePreview('leagueLogo', 'logoPreview')" placeholder="https://..." class="flex-1 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white">
+                                <div id="logoPreview">${renderEntityImage(data.logo, data.name, "w-10 h-10 rounded-xl")}</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nazione</label>
+                                <input type="text" id="leagueCountry" value="${data.country}" class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Livello/Tier</label>
+                                <input type="text" id="leagueTier" value="${data.tier}" class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Moltiplicatore</label>
+                                <input type="number" step="0.1" id="leagueWeight" value="${data.weight}" class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Descrizione Wikipedia</label>
+                            <textarea id="leagueDescription" rows="3" class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white">${data.description || ''}</textarea>
+                        </div>
+                    </form>
+                `;
+            } else if (activeEditing.type === 'team') {
+                const data = isEdit ? db.teams.find(t => t.id === activeEditing.id) : { name: '', logo: '', country: '🇮🇹 Italia', founded: 1950, previousNames: [], history: [] };
+                titleEl.innerText = isEdit ? `Modifica: ${data.name}` : 'Nuova Squadra';
+
+                bodyEl.innerHTML = selectorHtml + `
+                    <form id="activeForm" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nome Squadra Attuale</label>
+                            <input type="text" id="teamName" value="${data.name}" required class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">URL Logo Immagine</label>
+                            <div class="flex gap-3 items-center">
+                                <input type="url" id="teamLogo" value="${data.logo || ''}" oninput="updateFormImagePreview('teamLogo', 'teamLogoPreview')" placeholder="https://..." class="flex-1 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white">
+                                <div id="teamLogoPreview">${renderEntityImage(data.logo, data.name, "w-10 h-10 rounded-xl")}</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nazione</label>
+                                <input type="text" id="teamCountry" value="${data.country}" class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Anno Fondazione</label>
+                                <input type="number" id="teamFounded" value="${data.founded || ''}" class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white">
+                            </div>
+                        </div>
+
+                        <!-- Previous Names Builder -->
+                        <div class="border-t border-slate-200 dark:border-slate-800 pt-3">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Storico Nomi Precedenti / Sponsor</label>
+                            <div id="prevNamesContainer" class="space-y-2">
+                                ${(data.previousNames || []).map((pn) => `
+                                    <div class="flex gap-2 items-center">
+                                        <input type="text" placeholder="Periodo (es. 2018-2022)" value="${pn.period}" class="pn-period w-1/3 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-1 text-xs text-slate-900 dark:text-white">
+                                        <input type="text" placeholder="Nome dell'epoca" value="${pn.name}" class="pn-name w-2/3 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-1 text-xs text-slate-900 dark:text-white">
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <button type="button" onclick="addPrevNameRow()" class="mt-2 text-xs text-brand-500 font-bold">+ Aggiungi Periodo Sponsor</button>
+                        </div>
+
+                        <!-- History Builder -->
+                        <div class="border-t border-slate-200 dark:border-slate-800 pt-3">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Cronistoria Campionati</label>
+                            <div id="teamHistoryContainer" class="space-y-2">
+                                ${(data.history || []).map(h => `
+                                    <div class="flex gap-2 items-center">
+                                        <input type="text" placeholder="Stagione (2022-23)" value="${h.season}" class="th-season w-1/4 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-1 text-xs text-slate-900 dark:text-white">
+                                        <select class="th-league w-2/4 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-1 text-xs text-slate-900 dark:text-white">
+                                            ${db.leagues.map(l => `<option value="${l.id}" ${l.id === h.leagueId ? 'selected' : ''}>${l.name}</option>`).join('')}
+                                        </select>
+                                        <input type="number" placeholder="Pos." value="${h.position}" class="th-pos w-1/4 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-1 text-xs text-slate-900 dark:text-white">
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <button type="button" onclick="addTeamHistoryRow()" class="mt-2 text-xs text-brand-500 font-bold">+ Aggiungi Piazzamento</button>
+                        </div>
+                    </form>
+                `;
+            } else if (activeEditing.type === 'player') {
+                const data = isEdit ? db.players.find(p => p.id === activeEditing.id) : { name: '', photo: '', country: '🇮🇹 Italia', position: 'PM', birthYear: 1995, height: 195, jerseyNumber: 10, history: [] };
+                titleEl.innerText = isEdit ? `Modifica: ${data.name}` : 'Nuovo Giocatore';
+
+                bodyEl.innerHTML = selectorHtml + `
+                    <form id="activeForm" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nome e Cognome</label>
+                            <input type="text" id="playerName" value="${data.name}" required class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">URL Foto Giocatore</label>
+                            <div class="flex gap-3 items-center">
+                                <input type="url" id="playerPhoto" value="${data.photo || ''}" oninput="updateFormImagePreview('playerPhoto', 'playerPhotoPreview', true)" placeholder="https://..." class="flex-1 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white">
+                                <div id="playerPhotoPreview">${renderEntityImage(data.photo, data.name, "w-10 h-10 rounded-full")}</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nazione</label>
+                                <input type="text" id="playerCountry" value="${data.country}" class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Ruolo</label>
+                                <select id="playerPosition" class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white">
+                                    <option value="PM" ${data.position === 'PM' ? 'selected' : ''}>PM - Playmaker</option>
+                                    <option value="G" ${data.position === 'G' ? 'selected' : ''}>G - Guardia Tiratrice</option>
+                                    <option value="AP" ${data.position === 'AP' ? 'selected' : ''}>AP - Ala Piccola</option>
+                                    <option value="AG" ${data.position === 'AG' ? 'selected' : ''}>AG - Ala Grande</option>
+                                    <option value="C" ${data.position === 'C' ? 'selected' : ''}>C - Centro / Pivot</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Anno Nascita</label>
+                                <input type="number" id="playerBirthYear" value="${data.birthYear || ''}" class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Altezza (cm)</label>
+                                <input type="number" id="playerHeight" value="${data.height || ''}" class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">N. Maglia</label>
+                                <input type="number" id="playerJersey" value="${data.jerseyNumber || ''}" class="w-full bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white">
+                            </div>
+                        </div>
+
+                        <!-- Player Career Builder -->
+                        <div class="border-t border-slate-200 dark:border-slate-800 pt-3">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Storico Stagioni & Media Punti</label>
+                            <div id="playerHistoryContainer" class="space-y-2">
+                                ${(data.history || []).map(ph => `
+                                    <div class="flex gap-2 items-center">
+                                        <input type="text" placeholder="2022-23" value="${ph.season}" class="ph-season w-1/5 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-1 text-xs text-slate-900 dark:text-white">
+                                        <select class="ph-team w-2/5 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-1 text-xs text-slate-900 dark:text-white">
+                                            ${db.teams.map(t => `<option value="${t.id}" ${t.id === ph.teamId ? 'selected' : ''}>${t.name}</option>`).join('')}
+                                        </select>
+                                        <input type="number" step="0.1" placeholder="PTS" value="${ph.pts || ''}" class="ph-pts w-1/5 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-1 text-xs text-slate-900 dark:text-white">
+                                        <input type="text" placeholder="Ruolo" value="${ph.role || ''}" class="ph-role w-1/5 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-1 text-xs text-slate-900 dark:text-white">
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <button type="button" onclick="addPlayerHistoryRow()" class="mt-2 text-xs text-purple-500 font-bold">+ Aggiungi Stagione</button>
+                        </div>
+                    </form>
+                `;
+            }
+        }
+
+        function switchFormType(type) {
+            activeEditing.type = type;
+            setupModalForm();
+        }
+
+        function addPrevNameRow() {
+            const container = document.getElementById('prevNamesContainer');
+            const div = document.createElement('div');
+            div.className = 'flex gap-2 items-center';
+            div.innerHTML = `
+                <input type="text" placeholder="Periodo (es. 2018-2022)" class="pn-period w-1/3 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-1 text-xs text-slate-900 dark:text-white">
+                <input type="text" placeholder="Nome dell'epoca" class="pn-name w-2/3 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-1 text-xs text-slate-900 dark:text-white">
+            `;
+            container.appendChild(div);
+        }
+
+        function addTeamHistoryRow() {
+            const container = document.getElementById('teamHistoryContainer');
+            const div = document.createElement('div');
+            div.className = 'flex gap-2 items-center';
+            div.innerHTML = `
+                <input type="text" placeholder="Stagione (2022-23)" class="th-season w-1/4 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-1 text-xs text-slate-900 dark:text-white">
+                <select class="th-league w-2/4 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-1 text-xs text-slate-900 dark:text-white">
+                    ${db.leagues.map(l => `<option value="${l.id}">${l.name}</option>`).join('')}
+                </select>
+                <input type="number" placeholder="Pos." class="th-pos w-1/4 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-1 text-xs text-slate-900 dark:text-white">
+            `;
+            container.appendChild(div);
+        }
+
+        function addPlayerHistoryRow() {
+            const container = document.getElementById('playerHistoryContainer');
+            const div = document.createElement('div');
+            div.className = 'flex gap-2 items-center';
+            div.innerHTML = `
+                <input type="text" placeholder="2022-23" class="ph-season w-1/5 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-1 text-xs text-slate-900 dark:text-white">
+                <select class="ph-team w-2/5 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-1 text-xs text-slate-900 dark:text-white">
+                    ${db.teams.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
+                </select>
+                <input type="number" step="0.1" placeholder="PTS" class="ph-pts w-1/5 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-1 text-xs text-slate-900 dark:text-white">
+                <input type="text" placeholder="Ruolo" class="ph-role w-1/5 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-1 text-xs text-slate-900 dark:text-white">
+            `;
+            container.appendChild(div);
+        }
+
+        function saveEntityForm() {
+            const isEdit = !!activeEditing.id;
+
+            if (activeEditing.type === 'league') {
+                const name = document.getElementById('leagueName').value.trim();
+                if (!name) return alert('Inserisci il nome del campionato.');
+
+                const newLeague = {
+                    id: isEdit ? activeEditing.id : 'league-' + Date.now(),
+                    name,
+                    logo: document.getElementById('leagueLogo').value.trim(),
+                    country: document.getElementById('leagueCountry').value.trim() || '🇮🇹 Italia',
+                    tier: document.getElementById('leagueTier').value.trim() || 'Nazionale',
+                    weight: parseFloat(document.getElementById('leagueWeight').value) || 1.0,
+                    description: document.getElementById('leagueDescription').value.trim()
+                };
+
+                if (isEdit) {
+                    const idx = db.leagues.findIndex(l => l.id === activeEditing.id);
+                    if (idx !== -1) db.leagues[idx] = newLeague;
+                } else {
+                    db.leagues.push(newLeague);
+                }
+
+            } else if (activeEditing.type === 'team') {
+                const name = document.getElementById('teamName').value.trim();
+                if (!name) return alert('Inserisci il nome della squadra.');
+
+                const pnPeriods = document.querySelectorAll('.pn-period');
+                const pnNames = document.querySelectorAll('.pn-name');
+                const previousNames = [];
+                pnPeriods.forEach((el, i) => {
+                    if (el.value.trim() && pnNames[i].value.trim()) {
+                        previousNames.push({ period: el.value.trim(), name: pnNames[i].value.trim() });
+                    }
+                });
+
+                const thSeasons = document.querySelectorAll('.th-season');
+                const thLeagues = document.querySelectorAll('.th-league');
+                const thPositions = document.querySelectorAll('.th-pos');
+                const history = [];
+                thSeasons.forEach((el, i) => {
+                    if (el.value.trim() && thPositions[i].value) {
+                        history.push({
+                            season: el.value.trim(),
+                            leagueId: thLeagues[i].value,
+                            position: parseInt(thPositions[i].value)
+                        });
+                    }
+                });
+
+                const newTeam = {
+                    id: isEdit ? activeEditing.id : 'team-' + Date.now(),
+                    name,
+                    logo: document.getElementById('teamLogo').value.trim(),
+                    country: document.getElementById('teamCountry').value.trim() || '🇮🇹 Italia',
+                    founded: parseInt(document.getElementById('teamFounded').value) || null,
+                    previousNames,
+                    history
+                };
+
+                if (isEdit) {
+                    const idx = db.teams.findIndex(t => t.id === activeEditing.id);
+                    if (idx !== -1) db.teams[idx] = newTeam;
+                } else {
+                    db.teams.push(newTeam);
+                }
+
+            } else if (activeEditing.type === 'player') {
+                const name = document.getElementById('playerName').value.trim();
+                if (!name) return alert('Inserisci il nome del giocatore.');
+
+                const phSeasons = document.querySelectorAll('.ph-season');
+                const phTeams = document.querySelectorAll('.ph-team');
+                const phPts = document.querySelectorAll('.ph-pts');
+                const phRoles = document.querySelectorAll('.ph-role');
+                const history = [];
+                phSeasons.forEach((el, i) => {
+                    if (el.value.trim() && phTeams[i].value) {
+                        history.push({
+                            season: el.value.trim(),
+                            teamId: phTeams[i].value,
+                            pts: phPts[i].value ? parseFloat(phPts[i].value) : null,
+                            role: phRoles[i].value.trim() || 'Giocatore'
+                        });
+                    }
+                });
+
+                const newPlayer = {
+                    id: isEdit ? activeEditing.id : 'player-' + Date.now(),
+                    name,
+                    photo: document.getElementById('playerPhoto').value.trim(),
+                    country: document.getElementById('playerCountry').value.trim() || '🇮🇹 Italia',
+                    position: document.getElementById('playerPosition').value,
+                    birthYear: parseInt(document.getElementById('playerBirthYear').value) || null,
+                    height: parseInt(document.getElementById('playerHeight').value) || null,
+                    jerseyNumber: parseInt(document.getElementById('playerJersey').value) || null,
+                    history
+                };
+
+                if (isEdit) {
+                    const idx = db.players.findIndex(p => p.id === activeEditing.id);
+                    if (idx !== -1) db.players[idx] = newPlayer;
+                } else {
+                    db.players.push(newPlayer);
+                }
+            }
+
+            saveStorage();
+            closeModal();
+            render();
+        }
+
+        function deleteCurrentEntity() {
+            if (!activeEditing.id) return;
+            if (confirm("Sei sicuro di voler eliminare questo elemento dal database?")) {
+                if (activeEditing.type === 'league') {
+                    db.leagues = db.leagues.filter(l => l.id !== activeEditing.id);
+                } else if (activeEditing.type === 'team') {
+                    db.teams = db.teams.filter(t => t.id !== activeEditing.id);
+                } else if (activeEditing.type === 'player') {
+                    db.players = db.players.filter(p => p.id !== activeEditing.id);
+                }
+                saveStorage();
+                closeModal();
+                navigateTo('classifiche');
+            }
+        }
+
+        window.onload = function() {
+            initStorage();
+            render();
+        };
+    </script>
+</body>
+</html>
