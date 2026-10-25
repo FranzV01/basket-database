@@ -1,0 +1,27 @@
+name: Auto Split HTML/CSS/JS
+
+on:
+  push:
+    branches:
+      - main # O il nome del tuo branch principale
+
+jobs:
+  split-code:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del repository
+        uses: actions/checkout@v4
+
+      - name: Imposta Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Esegui script di separazione
+        run: node splitter.js
+
+      - name: Commit e Push dei file separati
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Automated code split: HTML, CSS, and JS separated"
+          file_pattern: "*.html *.css *.js"
